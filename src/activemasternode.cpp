@@ -157,19 +157,28 @@ void CActiveMasternode::ManageStateInitial(CConnman& connman)
         return;
     }
 
+    /// Masternocde Multiport /// 
     int mainnetDefaultPort = CreateChainParams(CBaseChainParams::MAIN)->GetDefaultPort();
-    if(Params().NetworkIDString() == CBaseChainParams::MAIN) {
-        if(service.GetPort() != mainnetDefaultPort) {
+    if(sporkManager.IsSporkActive(Spork::SPORK_55_MASTERNODE_MULTIPORT_ENABLED))
+    {
+        if(Params().NetworkIDString() == CBaseChainParams::MAIN) {
+            if(service.GetPort() != mainnetDefaultPort) {
+                nState = ACTIVE_MASTERNODE_NOT_CAPABLE;
+                strNotCapableReason = strprintf("Invalid port: %u - only %d is supported on mainnet.", service.GetPort(), mainnetDefaultPort);
+                LogPrintf("CActiveMasternode::ManageStateInitial -- %s: %s\n", GetStateString(), strNotCapableReason);
+                return;
+            }
+        }
+    }
+
+    // Mainnet port only for mainnet.
+    if(Params().NetworkIDString() != CBaseChainParams::MAIN) {
+        if(service.GetPort() == mainnetDefaultPort) {
             nState = ACTIVE_MASTERNODE_NOT_CAPABLE;
-            strNotCapableReason = strprintf("Invalid port: %u - only %d is supported on mainnet.", service.GetPort(), mainnetDefaultPort);
+            strNotCapableReason = strprintf("Invalid port: %u - %d is only supported on mainnet.", service.GetPort(), mainnetDefaultPort);
             LogPrintf("CActiveMasternode::ManageStateInitial -- %s: %s\n", GetStateString(), strNotCapableReason);
             return;
         }
-    } else if(service.GetPort() == mainnetDefaultPort) {
-        nState = ACTIVE_MASTERNODE_NOT_CAPABLE;
-        strNotCapableReason = strprintf("Invalid port: %u - %d is only supported on mainnet.", service.GetPort(), mainnetDefaultPort);
-        LogPrintf("CActiveMasternode::ManageStateInitial -- %s: %s\n", GetStateString(), strNotCapableReason);
-        return;
     }
 
     LogPrintf("CActiveMasternode::ManageStateInitial -- Checking inbound connection to '%s'\n", service.ToString());

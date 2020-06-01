@@ -1147,7 +1147,7 @@ CAmount GetBlockSubsidy(int nPrevHeight, const Consensus::Params& consensusParam
         return 2000000 * COIN;
 
     //! note this is purely to disrupt the old chain
-    if (nPrevHeight == 1000)
+    if (nPrevHeight == 15000)
         return 25 * COIN;
 
     int halvings = nPrevHeight / consensusParams.nSubsidyHalvingInterval;

@@ -8,6 +8,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 
+#include <spork.h>
+
 CMasternodeConfig masternodeConfig;
 
 void CMasternodeConfig::add(std::string alias, std::string ip, std::string privKey, std::string txHash, std::string outputIndex) {
@@ -66,22 +68,31 @@ bool CMasternodeConfig::read(std::string& strErr) {
             return false;
         }
         int mainnetDefaultPort = CreateChainParams(CBaseChainParams::MAIN)->GetDefaultPort();
-        if(Params().NetworkIDString() == CBaseChainParams::MAIN) {
-            if(port != mainnetDefaultPort) {
-                strErr = _("Invalid port detected in masternode.conf") + "\n" +
-                        strprintf(_("Port: %d"), port) + "\n" +
-                        strprintf(_("Line: %d"), linenumber) + "\n\"" + line + "\"" + "\n" +
-                        strprintf(_("(must be %d for mainnet)"), mainnetDefaultPort);
-                streamConfig.close();
-                return false;
+        if(sporkManager.IsSporkActive(Spork::SPORK_55_MASTERNODE_MULTIPORT_ENABLED))
+        {
+            if(Params().NetworkIDString() == CBaseChainParams::MAIN) {
+                if(port != mainnetDefaultPort) {
+                    strErr = _("Invalid port detected in masternode.conf") + "\n" +
+                            strprintf(_("Port: %d"), port) + "\n" +
+                            strprintf(_("Line: %d"), linenumber) + "\n\"" + line + "\"" + "\n" +
+                            strprintf(_("(must be %d for mainnet)"), mainnetDefaultPort);
+                    streamConfig.close();
+                    return false;
+                }
             }
-        } else if(port == mainnetDefaultPort) {
+        }
+
+        // Using mainnet port on another network is a hassle for everyone.
+        if(Params().NetworkIDString() != CBaseChainParams::MAIN) {
+            if(port == mainnetDefaultPort) {
             strErr = _("Invalid port detected in masternode.conf") + "\n" +
                     strprintf(_("Line: %d"), linenumber) + "\n\"" + line + "\"" + "\n" +
                     strprintf(_("(%d could be used only on mainnet)"), mainnetDefaultPort);
             streamConfig.close();
             return false;
         }
+
+      }
 
 
         add(alias, ip, privKey, txHash, outputIndex);

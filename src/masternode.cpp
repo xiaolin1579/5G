@@ -530,9 +530,16 @@ bool CMasternodeBroadcast::SimpleCheck(int& nDos)
     }
 
     int mainnetDefaultPort = CreateChainParams(CBaseChainParams::MAIN)->GetDefaultPort();
+    if(sporkManager.IsSporkActive(Spork::SPORK_55_MASTERNODE_MULTIPORT_ENABLED))
+    {
+     if(Params().NetworkIDString() == CBaseChainParams::MAIN) {
+        if(addr.GetPort() != mainnetDefaultPort) return false;
+        }
+    }
+
     if(Params().NetworkIDString() == CBaseChainParams::MAIN) {
         if(addr.GetPort() != mainnetDefaultPort) return false;
-    } else if(addr.GetPort() == mainnetDefaultPort) return false;
+    }
 
     return true;
 }

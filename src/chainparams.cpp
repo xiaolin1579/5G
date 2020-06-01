@@ -122,7 +122,7 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nTimeout = 1510704000; // November 15th, 2017.
 
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("00000000000000000000000000000000000000000000000000000002567607f1");
+        consensus.nMinimumChainWork = uint256S("0000000000000000000000000000000000000000000000000009fcfd709770a7");
 
         // By default assume that the signatures in ancestors of this block are valid.
         consensus.defaultAssumeValid = uint256S("be6652725fb3d62ed3851c0e9d499d16908414d93fa76aadd9b00e50a77266f8");
@@ -169,15 +169,24 @@ public:
         checkpointData = {
         	{
 				{5, uint256S("0xce071bc212ac756b52417fd4d26ea9bea569ff013e3b70f5a92711d810d611a4")},
-                {55, uint256S("0x3e205de924398acb50269fd6e756bad9cb06c1eaaa3280a83b2e687bd1e26227")},
+                                {55, uint256S("0x3e205de924398acb50269fd6e756bad9cb06c1eaaa3280a83b2e687bd1e26227")},
 				{155, uint256S("0x6148b7e7de65abdaa6cc519088d28bbcb1427c3f15ab9e83fa3917809688a21d")},
 				{1111, uint256S("0x7a5e056f1cc01b15faf9eaaaa85723d9d5019ee28ba93e39cca539a15b41a362")},
+				{5000, uint256S("0x385c79c9e2f094ad8070380a6d332669390aff9b90f51b05479ee812991867d5")},
+				{7500, uint256S("0x1a987be56f400c45fe24c14b5cabe41db11ca6d71eed1f124b3ab174a8675a4a")},
+				{9350, uint256S("0xe6de813f8361eecb0e0fc900a473862734f47883acb85f3d0064a7c0c5afe965")},
+				{9500, uint256S("0x2f2752167ae794c67ab0c6f3424e08cc995b2a771b975e5783c72edfde06a1ca")},
+				{10000, uint256S("0x67feed59e7d4ff189538c61bffb4c394c07f820d1955c2f3068dec2026ab3913")},
+				{11000, uint256S("0x383fa0abe3ac24ab2ea2cbf2cd46c47cf6aafb70e027b820e67586addefc59c1")},
+				{12000, uint256S("0x70fbeadd10fdf9214e18259f8a0f838044d7c9cd7b6b62afd398b70710270cac")},
+				{13000, uint256S("0x38f112dc2356ab6ac0b8032388381ec1b24eddba75cded518271faad60a20bf9")},
+				{13400, uint256S("0x1f902838f350d21ab3dac8aeebd07aa4dfc89bb2a1b829569e4fde0878f1074e")},
             }
         };
 
         chainTxData = ChainTxData{
-        		1590262592,
-        		1192,
+        		1591033254,
+        		14221,
         		0.017
         };
 

@@ -1648,7 +1648,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             }
         }
 
-        if (nVersion < MIN_PEER_PROTO_VERSION && chainActive.Height() >= 15000)
+        if (nVersion < MIN_PEER_PROTO_VERSION && chainActive.Height() >= 27500)
         {
             // disconnect from peers older than this proto version
             LogPrint(BCLog::NET, "peer=%d using obsolete version %i; disconnecting\n", pfrom->GetId(), nVersion);
@@ -1882,8 +1882,6 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         connman->AddNewAddresses(vAddrOk, pfrom->addr, 2 * 60 * 60);
         if (vAddr.size() < 1000)
             pfrom->fGetAddr = false;
-        if (pfrom->fOneShot)
-            pfrom->fDisconnect = true;
     }
 
     else if (strCommand == NetMsgType::SENDHEADERS)

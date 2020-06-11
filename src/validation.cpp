@@ -1147,7 +1147,7 @@ CAmount GetBlockSubsidy(int nPrevHeight, const Consensus::Params& consensusParam
         return 2000000 * COIN;
 
     //! note this is purely to disrupt the old chain
-    if (nPrevHeight == 15000)
+    if (nPrevHeight == 27500)
         return 25 * COIN;
 
     int halvings = nPrevHeight / consensusParams.nSubsidyHalvingInterval;
@@ -5109,12 +5109,12 @@ unsigned int max_tx_weight()
 {
     if (chainActive.Height() >= fork_height())
         return 1000000; //! 250kb due to segwit
-    return 400000;      //! 100kb standard btc max
+        return 400000; //! 100kb standard btc max
 }
 
 int fork_height()
 {
-    return 1500;
+    return 30000;
 }
 
 class CMainCleanup

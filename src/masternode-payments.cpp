@@ -52,9 +52,6 @@ bool IsBlockValueValid(const CBlock& block, int nBlockHeight, CAmount expectedRe
 {
     strErrorRet = "";
 
-    bool isProofOfStake = !block.IsProofOfWork();
-    const auto& coinbaseTransaction = block.vtx[isProofOfStake];
-
     bool isBlockRewardValueMet = (actualReward <= expectedReward);
     LogPrint(BCLog::MNPAYMENTS, "actualReward %lld <= blockReward %lld\n", actualReward, expectedReward);
     if(!isBlockRewardValueMet) {
@@ -254,14 +251,11 @@ void CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int nBlockH
 }
 
 int CMasternodePayments::GetMinMasternodePaymentsProto() {
-    return sporkManager.IsSporkActive(Spork::SPORK_10_MASTERNODE_PAY_UPDATED_NODES)
-            ? MIN_MASTERNODE_PAYMENT_PROTO_VERSION_2
-            : MIN_MASTERNODE_PAYMENT_PROTO_VERSION_1;
+return PROTOCOL_VERSION;
 }
 
 void CMasternodePayments::ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, CConnman& connman)
 {
-    if(fLiteMode) return; // disable all 5G specific functionality
 
     if (strCommand == NetMsgType::MASTERNODEPAYMENTSYNC) { //Masternode Payments Request Sync
 
@@ -525,7 +519,6 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
                 }
                 if (payee.GetPayee() == txout.scriptPubKey) {
                     LogPrint(BCLog::MNPAYMENTS, "CMasternodeBlockPayees::IsTransactionValid -- Found required payment\n");
-                    return true;
                 }
             }
 

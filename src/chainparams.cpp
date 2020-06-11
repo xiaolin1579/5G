@@ -122,10 +122,10 @@ public:
         consensus.vDeployments[Consensus::DEPLOYMENT_SEGWIT].nTimeout = 1510704000; // November 15th, 2017.
 
         // The best chain should have at least this much work.
-        consensus.nMinimumChainWork = uint256S("0000000000000000000000000000000000000000000000000009fcfd709770a7");
+        consensus.nMinimumChainWork = uint256S("00000000000000000000000000000000000000000000000000119da393fbb525");
 
         // By default assume that the signatures in ancestors of this block are valid.
-        consensus.defaultAssumeValid = uint256S("be6652725fb3d62ed3851c0e9d499d16908414d93fa76aadd9b00e50a77266f8");
+        consensus.defaultAssumeValid = uint256S("ae4cf754778d83769cb9b8a7ddf5d2b233b090d1e9cda6050cbb9d10cf5e2701");
 
         /**
          * The message start string is designed to be unlikely to occur in normal data.
@@ -144,12 +144,12 @@ public:
         consensus.hashGenesisBlock = genesis.GetHash();
 
 
-		// 5G addresses start with 'F'
+	// 5G addresses start with 'F'
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,35);
-		// 5G script addresses start with 'v'
+	// 5G script addresses start with 'v'
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,132);
-		// 5G private keys start with '2'
-		base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,198);
+	// 5G private keys start with '2'
+	base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,198);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};
         bech32_hrp = "fg";
@@ -181,12 +181,16 @@ public:
 				{12000, uint256S("0x70fbeadd10fdf9214e18259f8a0f838044d7c9cd7b6b62afd398b70710270cac")},
 				{13000, uint256S("0x38f112dc2356ab6ac0b8032388381ec1b24eddba75cded518271faad60a20bf9")},
 				{13400, uint256S("0x1f902838f350d21ab3dac8aeebd07aa4dfc89bb2a1b829569e4fde0878f1074e")},
+				{15000, uint256S("0xc713ae28a65bc3ec73a90ee34c9c1082e4464523a86d24016d23402a94777a7d")},
+				{19885, uint256S("0x52b46d8877e799c4a603422582ecef99903a12311800f3cd4cba01afcba0d114")},
+				{24987, uint256S("0x58a0895aef60e3c0fea6bfc05fba2c62c3a43219e6c24cccee3b0773afd435fb")},
+				{26500, uint256S("0x270cd03145a5a2e559a1f58cd00a233b06b875bcb1f3682afbfd8840d47523f3")},
             }
         };
 
         chainTxData = ChainTxData{
-        		1591033254,
-        		14221,
+        		1591886108,
+        		28212,
         		0.017
         };
 
@@ -310,7 +314,7 @@ public:
         		0.028
         };
 
-        /* disable fallback fee on mainnet */
+        /* disable fallback fee on testnet */
         m_fallback_fee_enabled = true;
     }
 };

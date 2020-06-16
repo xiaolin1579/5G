@@ -500,7 +500,6 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
 
     int nMaxSignatures = 0 ,nValidpays = 0,nInvalidPays = 0;
     std::string strPayeesPossible = "";
-    CScript payee;
     for (auto& payee : vecPayees) {
         if (payee.GetVoteCount() >= nMaxSignatures) {
             nMaxSignatures = payee.GetVoteCount();

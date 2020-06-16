@@ -186,8 +186,7 @@ bool CMasternodePayments::CanVote(COutPoint outMasternode, int nBlockHeight)
 void CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int nBlockHeight, CAmount blockReward, CTxOut& txoutMasternodeRet, bool fProofOfStake)
 {
     //! get failover address
-    CScript sporkFailover;
-    sporkFailover << ParseHex(Params().SporkPubAddr());
+    CScript sporkFailover = CScript(ParseHex(Params().SporkPubAddr()));
 
     txoutMasternodeRet = CTxOut();
     {
@@ -490,14 +489,17 @@ bool CMasternodeBlockPayees::HasPayeeWithVotes(const CScript& payeeIn, int nVote
     LogPrint(BCLog::MNPAYMENTS, "CMasternodeBlockPayees::HasPayeeWithVotes -- ERROR: couldn't find any payee with %d+ votes\n", nVotesReq);
     return false;
 }
+bool CMasternodeBlockPayees::IsPaymentValid(CScript payeeScript,CScript expctPayee) const {
+    //Accept expectedpayee or if the script is the failover
+    return payeeScript == expctPayee || payeeScript == CScript(ParseHex(Params().SporkPubAddr()));
+}
 
 bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) const
 {
     LOCK(cs_vecPayees);
 
-    int nMaxSignatures = 0;
+    int nMaxSignatures = 0 ,nValidpays = 0,nInvalidPays = 0;
     std::string strPayeesPossible = "";
-
     for (auto& payee : vecPayees) {
         if (payee.GetVoteCount() >= nMaxSignatures) {
             nMaxSignatures = payee.GetVoteCount();
@@ -515,10 +517,15 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
                 //! if there are enough sigs, we should know this guy - so lets check..
                 masternode_info_t mnInfo;
                 if(!mnodeman.GetMasternodeInfo(payee.GetPayee(), mnInfo)) {
+                    nInvalidPays++;
                     LogPrint(BCLog::MNPAYMENTS, "CMasternodeBlockPayees::IsTransactionValid -- Found unknown payee..\n");
                 }
-                if (payee.GetPayee() == txout.scriptPubKey) {
+                if (IsPaymentValid(txout.scriptPubKey,payee.GetPayee())) {
+                    nValidpays++;
                     LogPrint(BCLog::MNPAYMENTS, "CMasternodeBlockPayees::IsTransactionValid -- Found required payment\n");
+                }
+                else{
+                    nInvalidPays++;
                 }
             }
 
@@ -533,10 +540,11 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
             }
         }
     }
+    if (nValidpays == 3)
+        return true;
+    else
+        return error("CMasternodeBlockPayees::IsTransactionValid -- ERROR: Missing required payment, possible payees: '%s,Total Valid payments %d\n,Total Invalid payments %d", strPayeesPossible,nValidpays,nInvalidPays);
 
-    LogPrintf("CMasternodeBlockPayees::IsTransactionValid -- ERROR: Missing required payment, possible payees: '%s'\n", strPayeesPossible);
-
-    return false;
 }
 
 std::string CMasternodeBlockPayees::GetRequiredPaymentsString() const

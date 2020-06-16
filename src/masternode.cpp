@@ -302,10 +302,6 @@ bool CMasternode::IsInputAssociatedWithPubkey() const
         for(const CTxOut &out : tx->vout) {
             for(int i=0; i<Params().CollateralLevels(); i++) {
                 if(out.nValue == (Params().ValidCollateralAmounts()[i] * COIN) && out.scriptPubKey == payee) {
-                   LogPrintf("IsInputAssociatedWithPubkey() - masternode.cpp L291\n");
-                   LogPrintf("payee   == %s\n", payee.ToString().c_str());
-                   LogPrintf("nAmount == %llu\n", out.nValue);
-                   LogPrintf("Collat  == %llu\n", Params().ValidCollateralAmounts()[i]);
                    return true;
                 }
             }

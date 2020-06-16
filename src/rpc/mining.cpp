@@ -698,8 +698,7 @@ static UniValue getblocktemplate(const JSONRPCRequest& request)
     CScript payee1, payee2, payee3;
 
     //! get failover address
-    CScript sporkFailover;
-    sporkFailover << ParseHex(Params().SporkPubAddr());
+    CScript sporkFailover = CScript(ParseHex(Params().SporkPubAddr()));
 
     //! set primary address
     bool fPrimaryStatus = mnodeman.GetNextMasternodeInQueueForPayment(pindexPrev->nHeight+1, true, nCount, mnInfo, 0);

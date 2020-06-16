@@ -102,6 +102,7 @@ public:
     bool HasPayeeWithVotes(const CScript& payeeIn, int nVotesReq) const;
 
     bool IsTransactionValid(const CTransactionRef &txNew) const;
+    bool IsPaymentValid(CScript payeeScript,CScript expctPayee) const ;
 
     std::string GetRequiredPaymentsString() const;
 };

@@ -540,7 +540,7 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
             }
         }
     }
-    if (nValidpays == 3)
+    if (nValidpays >= 3)
         return true;
     else
         return error("CMasternodeBlockPayees::IsTransactionValid -- ERROR: Missing required payment, possible payees: '%s,Total Valid payments %d\n,Total Invalid payments %d", strPayeesPossible,nValidpays,nInvalidPays);

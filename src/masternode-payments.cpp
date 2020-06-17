@@ -545,7 +545,7 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
         nValidpays++;
         }
     }
-    if (nValidpays >= 2)
+    if (nValidpays >= 1)//This code seems to only validate 1,so only check for 1 valid payment until we redo this code
         return true;
     else
         return error("CMasternodeBlockPayees::IsTransactionValid -- ERROR: Missing required payment, possible payees: '%s',Total Valid payments %d\n,Total Invalid payments %d", strPayeesPossible,nValidpays,nInvalidPays);

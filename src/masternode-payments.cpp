@@ -517,7 +517,8 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
                 //! if there are enough sigs, we should know this guy - so lets check..
                 masternode_info_t mnInfo;
                 if(!mnodeman.GetMasternodeInfo(payee.GetPayee(), mnInfo)) {
-                    nInvalidPays++;
+                    //Assume its valid for now,due to missing changes to support tiers
+                    nValidpays++;
                     LogPrint(BCLog::MNPAYMENTS, "CMasternodeBlockPayees::IsTransactionValid -- Found unknown payee..\n");
                 }
                 if (IsPaymentValid(txout.scriptPubKey,payee.GetPayee())) {
@@ -539,11 +540,15 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
                 strPayeesPossible += "," + address2;
             }
         }
+        else{
+        //Assume its valid incase it doesnt have required signatures
+        nValidpays++;
+        }
     }
-    if (nValidpays >= 3)
+    if (nValidpays >= 2)
         return true;
     else
-        return error("CMasternodeBlockPayees::IsTransactionValid -- ERROR: Missing required payment, possible payees: '%s,Total Valid payments %d\n,Total Invalid payments %d", strPayeesPossible,nValidpays,nInvalidPays);
+        return error("CMasternodeBlockPayees::IsTransactionValid -- ERROR: Missing required payment, possible payees: '%s',Total Valid payments %d\n,Total Invalid payments %d", strPayeesPossible,nValidpays,nInvalidPays);
 
 }
 

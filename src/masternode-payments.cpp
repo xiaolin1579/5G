@@ -539,8 +539,12 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
                 strPayeesPossible += "," + address2;
             }
         }
+        else{
+        //Assume its valid incase it doesnt have required signatures
+        nValidpays++;
+        }
     }
-    if (nValidpays >= 3)
+    if (nValidpays >= 2)
         return true;
     else
         return error("CMasternodeBlockPayees::IsTransactionValid -- ERROR: Missing required payment, possible payees: '%s,Total Valid payments %d\n,Total Invalid payments %d", strPayeesPossible,nValidpays,nInvalidPays);

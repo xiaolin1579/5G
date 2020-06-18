@@ -493,7 +493,11 @@ bool CMasternodeBlockPayees::IsPaymentValid(CScript payeeScript,CScript expctPay
     //Accept expectedpayee or if the script is the failover
     return payeeScript == expctPayee || payeeScript == CScript(ParseHex(Params().SporkPubAddr()));
 }
-
+std::string GetAddrFromScript(CScript script){
+    CTxDestination address1;
+    ExtractDestination(script, address1);
+    return EncodeDestination(address1);
+}
 bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) const
 {
     LOCK(cs_vecPayees);
@@ -506,7 +510,7 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
         }
     }
 
-    // if we don't have at least MNPAYMENTS_SIGNATURES_REQUIRED signatures on a payee, approve whichever is the longest chain
+    // // if we don't have at least MNPAYMENTS_SIGNATURES_REQUIRED signatures on a payee, approve whichever is the longest chain
     if(nMaxSignatures < MNPAYMENTS_SIGNATURES_REQUIRED) return true;
 
     for (auto& payee : vecPayees) {
@@ -521,6 +525,7 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
                     nValidpays++;
                     LogPrint(BCLog::MNPAYMENTS, "CMasternodeBlockPayees::IsTransactionValid -- Found unknown payee..\n");
                 }
+                LogPrintf("Checking if payee %s matches expected addr %s\n",GetAddrFromScript(txout.scriptPubKey),GetAddrFromScript(payee.GetPayee()));
                 if (IsPaymentValid(txout.scriptPubKey,payee.GetPayee())) {
                     nValidpays++;
                     LogPrint(BCLog::MNPAYMENTS, "CMasternodeBlockPayees::IsTransactionValid -- Found required payment\n");
@@ -679,69 +684,54 @@ bool CMasternodePaymentVote::IsValid(CNode* pnode, int nValidationHeight, std::s
     return true;
 }
 
-bool CMasternodePayments::ProcessBlock(int nBlockHeight, CConnman& connman)
-{
-    // DETERMINE IF WE SHOULD BE VOTING FOR THE NEXT PAYEE
+bool CMasternodePayments::ProcessBlock(int nBlockHeight, CConnman & connman) {
+  // DETERMINE IF WE SHOULD BE VOTING FOR THE NEXT PAYEE
 
-    if(fLiteMode || !fMasterNode) return false;
+  if (fLiteMode || !fMasterNode) return false;
 
-    // We have little chances to pick the right winner if winners list is out of sync
-    // but we have no choice, so we'll try. However it doesn't make sense to even try to do so
-    // if we have not enough data about masternodes.
-    if(!masternodeSync.IsMasternodeListSynced()) return false;
+  // We have little chances to pick the right winner if winners list is out of sync
+  // but we have no choice, so we'll try. However it doesn't make sense to even try to do so
+  // if we have not enough data about masternodes.
+  if (!masternodeSync.IsMasternodeListSynced()) return false;
+  int nCount = 0;
+  masternode_info_t mnInfo;
 
-    int nRank;
-    int nCount = 0;
-    masternode_info_t mnInfo;
+  // LOCATE THE NEXT MASTERNODE WHICH SHOULD BE PAID
+  LogPrintf("CMasternodePayments::ProcessBlock -- Start: nBlockHeight=%d, masternode=%s\n", nBlockHeight, activeMasternode.outpoint.ToString());
 
-    for (unsigned int i = 0; i < 3; i++ ) {
-      if (!mnodeman.GetNextMasternodeInQueueForPayment(nBlockHeight, true, nCount, mnInfo, i)) {
-          LogPrintf("CMasternodePayments::ProcessBlock -- ERROR: Failed to find masternode (level %d) to pay\n", i);
-          return false;
-      }
-    }
+  // pay to the oldest MN that still had no payment but its input is old enough and it was active long enough
+  for (unsigned int i = 0; i < 3; i++) {
+    if (!mnodeman.GetNextMasternodeInQueueForPayment(nBlockHeight, true, nCount, mnInfo, i)) {
+      LogPrintf("CMasternodePayments::ProcessBlock -- ERROR: Failed to find masternode (level %d) to pay\n", i);
+      return false;
+    } else {
 
-    if (nRank > MNPAYMENTS_SIGNATURES_TOTAL) {
-        LogPrint(BCLog::MNPAYMENTS, "CMasternodePayments::ProcessBlock -- Masternode not in the top %d (%d)\n", MNPAYMENTS_SIGNATURES_TOTAL, nRank);
-        return false;
-    }
+      LogPrintf("CMasternodePayments::ProcessBlock -- Masternode found by GetNextMasternodeInQueueForPayment(): %s\n", mnInfo.vin.prevout.ToString());
 
-    // LOCATE THE NEXT MASTERNODE WHICH SHOULD BE PAID
-    LogPrintf("CMasternodePayments::ProcessBlock -- Start: nBlockHeight=%d, masternode=%s\n", nBlockHeight, activeMasternode.outpoint.ToString());
+      CScript payee = GetScriptForDestination(mnInfo.pubKeyCollateralAddress.GetID());
 
-    // pay to the oldest MN that still had no payment but its input is old enough and it was active long enough
-    for (unsigned int i = 0; i < 3; i++ ) {
-      if (!mnodeman.GetNextMasternodeInQueueForPayment(nBlockHeight, true, nCount, mnInfo, i)) {
-          LogPrintf("CMasternodePayments::ProcessBlock -- ERROR: Failed to find masternode (level %d) to pay\n", i);
-          return false;
-      }
-    }
+      CMasternodePaymentVote voteNew(activeMasternode.outpoint, nBlockHeight, payee);
 
-    LogPrintf("CMasternodePayments::ProcessBlock -- Masternode found by GetNextMasternodeInQueueForPayment(): %s\n", mnInfo.vin.prevout.ToString());
+      CTxDestination address1;
+      ExtractDestination(payee, address1);
 
+      LogPrintf("CMasternodePayments::ProcessBlock -- vote: payee=%s, nBlockHeight=%d\n", EncodeDestination(address1), nBlockHeight);
 
-    CScript payee = GetScriptForDestination(mnInfo.pubKeyCollateralAddress.GetID());
+      // SIGN MESSAGE TO NETWORK WITH OUR MASTERNODE KEYS
 
-    CMasternodePaymentVote voteNew(activeMasternode.outpoint, nBlockHeight, payee);
-
-    CTxDestination address1;
-    ExtractDestination(payee, address1);
-
-    LogPrintf("CMasternodePayments::ProcessBlock -- vote: payee=%s, nBlockHeight=%d\n", EncodeDestination(address1), nBlockHeight);
-
-    // SIGN MESSAGE TO NETWORK WITH OUR MASTERNODE KEYS
-
-    LogPrintf("CMasternodePayments::ProcessBlock -- Signing vote\n");
-    if (voteNew.Sign()) {
+      LogPrintf("CMasternodePayments::ProcessBlock -- Signing vote\n");
+      if (voteNew.Sign()) {
         LogPrintf("CMasternodePayments::ProcessBlock -- AddPaymentVote()\n");
 
         if (AddPaymentVote(voteNew)) {
-            voteNew.Relay(connman);
-            return true;
+          voteNew.Relay(connman);
+          return true;
         }
-    }
+      }
 
-    return false;
+      return false;
+    }
+  }
 }
 
 void CMasternodePayments::CheckPreviousBlockVotes(int nPrevBlockHeight)

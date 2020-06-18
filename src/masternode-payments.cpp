@@ -693,7 +693,7 @@ bool CMasternodePayments::ProcessBlock(int nBlockHeight, CConnman & connman) {
   // but we have no choice, so we'll try. However it doesn't make sense to even try to do so
   // if we have not enough data about masternodes.
   if (!masternodeSync.IsMasternodeListSynced()) return false;
-  int nCount = 0;
+  int nCount = 0,nSigned = 0;
   masternode_info_t mnInfo;
 
   // LOCATE THE NEXT MASTERNODE WHICH SHOULD BE PAID
@@ -725,13 +725,16 @@ bool CMasternodePayments::ProcessBlock(int nBlockHeight, CConnman & connman) {
 
         if (AddPaymentVote(voteNew)) {
           voteNew.Relay(connman);
-          return true;
+          nSigned++;
         }
       }
-
-      return false;
+      else{
+          LogPrintf("Unable to Sign vote for tier %d\n",i+1);
+      }
     }
   }
+  LogPrintf("Voted %d times sucessfully\n",nSigned);
+  return nSigned >=0;
 }
 
 void CMasternodePayments::CheckPreviousBlockVotes(int nPrevBlockHeight)

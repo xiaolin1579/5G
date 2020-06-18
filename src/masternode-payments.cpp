@@ -167,8 +167,8 @@ void CMasternodePayments::Clear()
 bool CMasternodePayments::CanVote(COutPoint outMasternode, int nBlockHeight)
 {
     LOCK(cs_mapMasternodePaymentVotes);
-    if (mapMasternodesLastVote.count(outMasternode) && mapMasternodesLastVote[outMasternode] == nBlockHeight && mapMasternodeVotecount.count(outMasternode) && mapMasternodeVotecount[outMasternode] > 3  ) {
-        return false;
+    if (mapMasternodesLastVote.count(outMasternode) && mapMasternodesLastVote[outMasternode] == nBlockHeight && mapMasternodeVotecount.count(outMasternode) && mapMasternodeVotecount[outMasternode] > 4  ) {
+        return error("MN Voted above threshold,votes are %d", mapMasternodeVotecount[outMasternode]);
     }
     mapMasternodeVotecount[outMasternode] = mapMasternodeVotecount.count(outMasternode) ? mapMasternodeVotecount[outMasternode] + 1 : 1;
     //record this masternode voted
@@ -511,18 +511,27 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
 
     // // if we don't have at least MNPAYMENTS_SIGNATURES_REQUIRED signatures on a payee, approve whichever is the longest chain
     if(nMaxSignatures < MNPAYMENTS_SIGNATURES_REQUIRED) return true;
-    for(int i=0;i<vecPayees.size();i++){
-      if (vecPayees[i].GetVoteCount() >= MNPAYMENTS_SIGNATURES_REQUIRED) {
+
+    for (auto& payee : vecPayees) {
+        if (payee.GetVoteCount() >= MNPAYMENTS_SIGNATURES_REQUIRED) {
             nExpectedMatches++;
-
-            if(txNew->vout.size() < 3)
-                return error("Coinbase TXOUT is < 3");
-
-            else if (txNew->vout.size() >= 3 && IsPaymentValid(txNew->vout[i].scriptPubKey,vecPayees[i].GetPayee()))
-                nValidpays++;
-
-            std::string address2 = GetAddrFromScript(vecPayees[i].GetPayee());
-
+            for (auto txout : txNew->vout) {
+                //! we cannot always guarantee there will be three payees,
+                //! nor can we guarantee they have enough votes..
+                //! if there are enough sigs, we should know this guy - so lets check..
+                masternode_info_t mnInfo;
+                if(!mnodeman.GetMasternodeInfo(payee.GetPayee(), mnInfo)) {
+                    LogPrint(BCLog::MNPAYMENTS, "CMasternodeBlockPayees::IsTransactionValid -- Found unknown payee..\n");
+                }
+                if (IsPaymentValid(txout.scriptPubKey,payee.GetPayee())) {
+                    nValidpays++;
+                    LogPrint(BCLog::MNPAYMENTS, "CMasternodeBlockPayees::IsTransactionValid -- Found required payment\n");
+                }
+                else{
+                    nInvalidPays++;
+                }
+            }
+            std::string address2 = GetAddrFromScript(payee.GetPayee());
             if(strPayeesPossible == "") {
                 strPayeesPossible = address2;
             } else {

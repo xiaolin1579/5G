@@ -167,10 +167,9 @@ void CMasternodePayments::Clear()
 bool CMasternodePayments::CanVote(COutPoint outMasternode, int nBlockHeight)
 {
     LOCK(cs_mapMasternodePaymentVotes);
-    if (mapMasternodesLastVote.count(outMasternode) && mapMasternodesLastVote[outMasternode] == nBlockHeight && mapMasternodeVotecount.count(outMasternode) && mapMasternodeVotecount[outMasternode] > 3  ) {
-        return false;
+    if (mapMasternodesLastVote.count(outMasternode) && mapMasternodesLastVote[outMasternode] == nBlockHeight && mapMasternodeVotecount.count(outMasternode) && mapMasternodeVotecount[outMasternode] > 4  ) {
+        return error("MN Voted above threshold,votes are %d", mapMasternodeVotecount[outMasternode]);
     }
-    LogPrintf("%d is mn vote count\n",mapMasternodeVotecount[outMasternode]);
     mapMasternodeVotecount[outMasternode] = mapMasternodeVotecount.count(outMasternode) ? mapMasternodeVotecount[outMasternode] + 1 : 1;
     //record this masternode voted
     mapMasternodesLastVote[outMasternode] = nBlockHeight;
@@ -524,7 +523,6 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
                 if(!mnodeman.GetMasternodeInfo(payee.GetPayee(), mnInfo)) {
                     LogPrint(BCLog::MNPAYMENTS, "CMasternodeBlockPayees::IsTransactionValid -- Found unknown payee..\n");
                 }
-                LogPrintf("Checking if payee %s matches expected addr %s\n",GetAddrFromScript(txout.scriptPubKey),GetAddrFromScript(payee.GetPayee()));
                 if (IsPaymentValid(txout.scriptPubKey,payee.GetPayee())) {
                     nValidpays++;
                     LogPrint(BCLog::MNPAYMENTS, "CMasternodeBlockPayees::IsTransactionValid -- Found required payment\n");
@@ -533,20 +531,12 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
                     nInvalidPays++;
                 }
             }
-
-            CTxDestination address1;
-            ExtractDestination(payee.GetPayee(), address1);
-            std::string address2 = EncodeDestination(address1);
-
+            std::string address2 = GetAddrFromScript(payee.GetPayee());
             if(strPayeesPossible == "") {
                 strPayeesPossible = address2;
             } else {
                 strPayeesPossible += "," + address2;
             }
-        }
-        else{
-        //Assume its valid incase it doesnt have required signatures
-        nValidpays++;
         }
     }
     if (nValidpays >= nExpectedMatches)

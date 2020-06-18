@@ -167,7 +167,7 @@ void CMasternodePayments::Clear()
 bool CMasternodePayments::CanVote(COutPoint outMasternode, int nBlockHeight)
 {
     LOCK(cs_mapMasternodePaymentVotes);
-    LogPrintf("%d is mn vote count\n",mapMasternodesLastVote.count(outMasternode));
+    LogPrintf("%d is mn vote count\n",mapMasternodeVotecount[outMasternode]);
     if (mapMasternodesLastVote.count(outMasternode) && mapMasternodesLastVote[outMasternode] == nBlockHeight && mapMasternodeVotecount[outMasternode] > 3  ) {
         return false;
     }

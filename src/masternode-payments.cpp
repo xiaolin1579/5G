@@ -511,12 +511,9 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
     }
 
     // // if we don't have at least MNPAYMENTS_SIGNATURES_REQUIRED signatures on a payee, approve whichever is the longest chain
-    // if(nMaxSignatures < MNPAYMENTS_SIGNATURES_REQUIRED) return true;
+    if(nMaxSignatures < MNPAYMENTS_SIGNATURES_REQUIRED) return true;
 
     for (auto& payee : vecPayees) {
-                    for (auto txout : txNew->vout) {
-                        LogPrintf("Checking if payee %s matches expected addr %s\n",GetAddrFromScript(txout.scriptPubKey),GetAddrFromScript(payee.GetPayee()));
-                    }
         if (payee.GetVoteCount() >= MNPAYMENTS_SIGNATURES_REQUIRED) {
             for (auto txout : txNew->vout) {
                 //! we cannot always guarantee there will be three payees,
@@ -528,6 +525,7 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
                     nValidpays++;
                     LogPrint(BCLog::MNPAYMENTS, "CMasternodeBlockPayees::IsTransactionValid -- Found unknown payee..\n");
                 }
+                LogPrintf("Checking if payee %s matches expected addr %s\n",GetAddrFromScript(txout.scriptPubKey),GetAddrFromScript(payee.GetPayee()));
                 if (IsPaymentValid(txout.scriptPubKey,payee.GetPayee())) {
                     nValidpays++;
                     LogPrint(BCLog::MNPAYMENTS, "CMasternodeBlockPayees::IsTransactionValid -- Found required payment\n");

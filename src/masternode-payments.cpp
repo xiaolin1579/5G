@@ -167,10 +167,10 @@ void CMasternodePayments::Clear()
 bool CMasternodePayments::CanVote(COutPoint outMasternode, int nBlockHeight)
 {
     LOCK(cs_mapMasternodePaymentVotes);
-    if(mapMasternodeVotecount.count(outMasternode) &&  mapMasternodeVotecount[outMasternode] >= 4 && mapMasternodesLastVote.count(outMasternode) && mapMasternodesLastVote[outMasternode] != nBlockHeight ){
+    if(mapMasternodeVotecount.count(outMasternode) &&  mapMasternodeVotecount[outMasternode] >= 3 && mapMasternodesLastVote.count(outMasternode) && mapMasternodesLastVote[outMasternode] != nBlockHeight ){
         mapMasternodeVotecount[outMasternode] = 0;
     }
-    if (mapMasternodesLastVote.count(outMasternode) && mapMasternodesLastVote[outMasternode] == nBlockHeight && mapMasternodeVotecount.count(outMasternode) && mapMasternodeVotecount[outMasternode] > 4  ) {
+    if (mapMasternodesLastVote.count(outMasternode) && mapMasternodesLastVote[outMasternode] == nBlockHeight && mapMasternodeVotecount.count(outMasternode) && mapMasternodeVotecount[outMasternode] > 3  ) {
         return error("MN Voted above threshold,votes are %d", mapMasternodeVotecount[outMasternode]);
     }
     mapMasternodeVotecount[outMasternode] = mapMasternodeVotecount.count(outMasternode) ? mapMasternodeVotecount[outMasternode] + 1 : 1;
@@ -422,7 +422,7 @@ bool CMasternodePayments::AddPaymentVote(const CMasternodePaymentVote& vote)
     if(!GetBlockHash(blockHash, vote.nBlockHeight - 101)) return false;
 
     if(HasVerifiedPaymentVote(vote.GetHash())) return false;
-    if(mapMasternodeVotecount.count(vote.vinMasternode.prevout) && mapMasternodeVotecount[vote.vinMasternode.prevout] > 4) return false;
+    if(mapMasternodeVotecount.count(vote.vinMasternode.prevout) && mapMasternodeVotecount[vote.vinMasternode.prevout] >= 3) return false;
     LOCK2(cs_mapMasternodeBlocks, cs_mapMasternodePaymentVotes);
 
     mapMasternodePaymentVotes[vote.GetHash()] = vote;

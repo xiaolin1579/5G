@@ -181,6 +181,7 @@ public:
     std::map<uint256, CMasternodePaymentVote> mapMasternodePaymentVotes;
     std::map<int, CMasternodeBlockPayees> mapMasternodeBlocks;
     std::map<COutPoint, int> mapMasternodesLastVote;
+    std::map<COutPoint, int> mapMasternodeVotecount;
     std::map<COutPoint, int> mapMasternodesDidNotVote;
 
     CMasternodePayments() : nStorageCoeff(1.25), nMinBlocksToStore(5000) {}

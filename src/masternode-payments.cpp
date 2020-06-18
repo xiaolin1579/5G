@@ -167,6 +167,9 @@ void CMasternodePayments::Clear()
 bool CMasternodePayments::CanVote(COutPoint outMasternode, int nBlockHeight)
 {
     LOCK(cs_mapMasternodePaymentVotes);
+    if(mapMasternodeVotecount.count(outMasternode) &&  mapMasternodeVotecount[outMasternode] >= 4 && mapMasternodesLastVote.count(outMasternode) && mapMasternodesLastVote[outMasternode] != nBlockHeight ){
+        mapMasternodeVotecount[outMasternode] = 0;
+    }
     if (mapMasternodesLastVote.count(outMasternode) && mapMasternodesLastVote[outMasternode] == nBlockHeight && mapMasternodeVotecount.count(outMasternode) && mapMasternodeVotecount[outMasternode] > 4  ) {
         return error("MN Voted above threshold,votes are %d", mapMasternodeVotecount[outMasternode]);
     }

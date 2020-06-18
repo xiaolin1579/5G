@@ -502,7 +502,7 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
 {
     LOCK(cs_vecPayees);
 
-    int nMaxSignatures = 0 ,nValidpays = 0,nInvalidPays = 0;
+    int nMaxSignatures = 0 ,nValidpays = 0,nInvalidPays = 0,nExpectedMatches = 0;
     std::string strPayeesPossible = "";
     for (auto& payee : vecPayees) {
         if (payee.GetVoteCount() >= nMaxSignatures) {
@@ -515,14 +515,13 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
 
     for (auto& payee : vecPayees) {
         if (payee.GetVoteCount() >= MNPAYMENTS_SIGNATURES_REQUIRED) {
+            nExpectedMatches++;
             for (auto txout : txNew->vout) {
                 //! we cannot always guarantee there will be three payees,
                 //! nor can we guarantee they have enough votes..
                 //! if there are enough sigs, we should know this guy - so lets check..
                 masternode_info_t mnInfo;
                 if(!mnodeman.GetMasternodeInfo(payee.GetPayee(), mnInfo)) {
-                    //Assume its valid for now,due to missing changes to support tiers
-                    nValidpays++;
                     LogPrint(BCLog::MNPAYMENTS, "CMasternodeBlockPayees::IsTransactionValid -- Found unknown payee..\n");
                 }
                 LogPrintf("Checking if payee %s matches expected addr %s\n",GetAddrFromScript(txout.scriptPubKey),GetAddrFromScript(payee.GetPayee()));
@@ -550,7 +549,7 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
         nValidpays++;
         }
     }
-    if (nValidpays >= 1)//This code seems to only validate 1,so only check for 1 valid payment until we redo this code
+    if (nValidpays >= nExpectedMatches)
         return true;
     else
         return error("CMasternodeBlockPayees::IsTransactionValid -- ERROR: Missing required payment, possible payees: '%s',Total Valid payments %d\n,Total Invalid payments %d", strPayeesPossible,nValidpays,nInvalidPays);

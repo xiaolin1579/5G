@@ -419,7 +419,7 @@ bool CMasternodePayments::AddPaymentVote(const CMasternodePaymentVote& vote)
     if(!GetBlockHash(blockHash, vote.nBlockHeight - 101)) return false;
 
     if(HasVerifiedPaymentVote(vote.GetHash())) return false;
-
+    if(mapMasternodeVotecount.count(vote.vinMasternode.prevout) && mapMasternodeVotecount[vote.vinMasternode.prevout] > 4) return false;
     LOCK2(cs_mapMasternodeBlocks, cs_mapMasternodePaymentVotes);
 
     mapMasternodePaymentVotes[vote.GetHash()] = vote;

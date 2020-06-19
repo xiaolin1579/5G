@@ -720,7 +720,7 @@ bool CMasternodePayments::ProcessBlock(int nBlockHeight, CConnman & connman) {
           voteNew.Relay(connman);
           nSigned++;
         }
-        if(nSigned >= 2){
+        if(nSigned >= 3){
             lastSignheight = nBlockHeight;
         }
       }

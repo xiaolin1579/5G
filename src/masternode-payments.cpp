@@ -26,6 +26,7 @@ CCriticalSection cs_mapMasternodePaymentVotes;
 
 //! weird dash bug that occurs in mnb/mnp, listed here so we can test against it
 COutPoint invalidMasternodeOutpoint(uint256S("0000000000000000000000000000000000000000000000000000000000000000"), 4294967295);
+int lastSignheight = 0;
 
 static bool GetBlockHash(uint256 &hash, int nBlockHeight)
 {

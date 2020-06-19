@@ -29,7 +29,6 @@ static const int MIN_MASTERNODE_PAYMENT_PROTO_VERSION_2 = PROTOCOL_VERSION;
 extern CCriticalSection cs_vecPayees;
 extern CCriticalSection cs_mapMasternodeBlocks;
 extern CCriticalSection cs_mapMasternodePayeeVotes;
-int lastSignheight = 0;
 extern CMasternodePayments mnpayments;
 
 /// TODO: all 4 functions do not belong here really, they should be refactored/moved somewhere (main.cpp ?)

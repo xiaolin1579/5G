@@ -687,7 +687,7 @@ bool CMasternodePayments::ProcessBlock(int nBlockHeight, CConnman & connman) {
   // if we have not enough data about masternodes.
   if (!masternodeSync.IsMasternodeListSynced()) return false;
   if(nBlockHeight <= lastSignheight) return false;
-  int nCount = 0,nSigned = 0;
+  int nCount = 0,nSigned = 0,nFailedToGet = 0,nExpected = 0;
   masternode_info_t mnInfo;
 
   // LOCATE THE NEXT MASTERNODE WHICH SHOULD BE PAID
@@ -696,10 +696,10 @@ bool CMasternodePayments::ProcessBlock(int nBlockHeight, CConnman & connman) {
   // pay to the oldest MN that still had no payment but its input is old enough and it was active long enough
   for (unsigned int i = 0; i < 3; i++) {
     if (!mnodeman.GetNextMasternodeInQueueForPayment(nBlockHeight, true, nCount, mnInfo, i)) {
-      LogPrintf("CMasternodePayments::ProcessBlock -- ERROR: Failed to find masternode (level %d) to pay\n", i);
-      return false;
+      LogPrintf("CMasternodePayments::ProcessBlock -- ERROR: Failed to find masternode (level %d) to pay\n", i + 1);
+      nFailedToGet++;
     } else {
-
+      nExpected++;
       LogPrintf("CMasternodePayments::ProcessBlock -- Masternode found by GetNextMasternodeInQueueForPayment(): %s\n", mnInfo.vin.prevout.ToString());
 
       CScript payee = GetScriptForDestination(mnInfo.pubKeyCollateralAddress.GetID());
@@ -721,7 +721,7 @@ bool CMasternodePayments::ProcessBlock(int nBlockHeight, CConnman & connman) {
           voteNew.Relay(connman);
           nSigned++;
         }
-        if(nSigned >= 3){
+        if(nSigned >= nExpected){
             lastSignheight = nBlockHeight;
         }
       }
@@ -731,7 +731,7 @@ bool CMasternodePayments::ProcessBlock(int nBlockHeight, CConnman & connman) {
     }
   }
   LogPrintf("Sucessfully Voted %d times sucessfully\n",nSigned);
-  return nSigned >=0;
+  return nSigned >= nExpected;
 }
 
 void CMasternodePayments::CheckPreviousBlockVotes(int nPrevBlockHeight)

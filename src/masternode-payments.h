@@ -24,7 +24,7 @@ static const int MNPAYMENTS_SIGNATURES_TOTAL            = 10;
 // V1 - Last protocol version before update
 // V2 - Newest protocol version
 static const int MIN_MASTERNODE_PAYMENT_PROTO_VERSION_1 = PROTOCOL_VERSION;
-static const int MIN_MASTERNODE_PAYMENT_PROTO_VERSION_2 = PROTOCOL_VERSION;
+static const int MIN_MASTERNODE_PAYMENT_PROTO_VERSION_2 = MIN_PEER_PROTO_VERSION;
 
 extern CCriticalSection cs_vecPayees;
 extern CCriticalSection cs_mapMasternodeBlocks;
@@ -204,9 +204,7 @@ public:
     void RequestLowDataPaymentBlocks(CNode* pnode, CConnman& connman);
     void CheckAndRemove();
 
-    bool GetBlockPayee(int nBlockHeight, CScript& payee);
     bool IsTransactionValid(const CTransactionRef &txNew, int nBlockHeight);
-    bool IsScheduled(const CMasternode &mn, int nNotBlockHeight) const;
 
     bool CanVote(COutPoint outMasternode, int nBlockHeight);
 

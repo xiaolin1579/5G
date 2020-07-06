@@ -253,7 +253,7 @@ void CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int nBlockH
 }
 
 int CMasternodePayments::GetMinMasternodePaymentsProto() {
-return PROTOCOL_VERSION;
+    return GetMinProto();
 }
 
 void CMasternodePayments::ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStream& vRecv, CConnman& connman)
@@ -386,37 +386,6 @@ bool CMasternodePaymentVote::Sign()
     return true;
 }
 
-bool CMasternodePayments::GetBlockPayee(int nBlockHeight, CScript& payee)
-{
-    if(mapMasternodeBlocks.count(nBlockHeight)){
-        return mapMasternodeBlocks[nBlockHeight].GetBestPayee(payee);
-    }
-
-    return false;
-}
-
-// Is this masternode scheduled to get paid soon?
-// -- Only look ahead up to 8 blocks to allow for propagation of the latest 2 blocks of votes
-bool CMasternodePayments::IsScheduled(const CMasternode& mn, int nNotBlockHeight) const
-{
-    LOCK(cs_mapMasternodeBlocks);
-
-    if(!masternodeSync.IsMasternodeListSynced()) return false;
-
-    CScript mnpayee;
-    mnpayee = GetScriptForDestination(mn.pubKeyCollateralAddress.GetID());
-
-    CScript payee;
-    for(int64_t h = nCachedBlockHeight; h <= nCachedBlockHeight + 8; h++){
-        if(h == nNotBlockHeight) continue;
-        if(mapMasternodeBlocks.count(h) && mapMasternodeBlocks.at(h).GetBestPayee(payee) && mnpayee == payee) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 bool CMasternodePayments::AddPaymentVote(const CMasternodePaymentVote& vote)
 {
     uint256 blockHash = uint256();
@@ -496,11 +465,13 @@ bool CMasternodeBlockPayees::IsPaymentValid(CScript payeeScript,CScript expctPay
     //Accept expectedpayee or if the script is the failover
     return payeeScript == expctPayee || payeeScript == CScript(ParseHex(Params().SporkPubAddr()));
 }
+
 std::string GetAddrFromScript(CScript script){
     CTxDestination address1;
     ExtractDestination(script, address1);
     return EncodeDestination(address1);
 }
+
 bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) const
 {
     LOCK(cs_vecPayees);
@@ -525,9 +496,10 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
                 //! if there are enough sigs, we should know this guy - so lets check..
                 masternode_info_t mnInfo;
                 if(!mnodeman.GetMasternodeInfo(payee.GetPayee(), mnInfo)) {
+                    nExpectedMatches--;
                     LogPrint(BCLog::MNPAYMENTS, "CMasternodeBlockPayees::IsTransactionValid -- Found unknown payee..\n");
                 }
-                if (IsPaymentValid(txout.scriptPubKey,payee.GetPayee())) {
+                else if (IsPaymentValid(txout.scriptPubKey,payee.GetPayee())) {
                     nValidpays++;
                     LogPrint(BCLog::MNPAYMENTS, "CMasternodeBlockPayees::IsTransactionValid -- Found required payment\n");
                 }
@@ -543,7 +515,7 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef& txNew) co
             }
         }
     }
-    if (nValidpays >= nExpectedMatches)
+    if (nExpectedMatches < 2 || nValidpays >= nExpectedMatches) 
         return true;
     else
         return error("CMasternodeBlockPayees::IsTransactionValid -- ERROR: Missing required payment, possible payees: '%s',Total Valid payments %d\n,Total Invalid payments %d", strPayeesPossible,nValidpays,nInvalidPays);

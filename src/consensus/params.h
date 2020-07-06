@@ -100,6 +100,7 @@ struct Params {
     int nCoinbaseMaturity;
     CAmount nMinStakeAmount;
     int nMinStakeHistory;
+    int nMnCheckChangeHeight;
 };
 } // namespace Consensus
 

@@ -85,7 +85,7 @@ bool CMasternode::UpdateFromNewBroadcast(CMasternodeBroadcast& mnb, CConnman& co
     // if it matches our Masternode privkey...
     if(fMasterNode && pubKeyMasternode == activeMasternode.pubKeyMasternode) {
         nPoSeBanScore = -MASTERNODE_POSE_BAN_MAX_SCORE;
-        if(nProtocolVersion == PROTOCOL_VERSION) {
+        if(nProtocolVersion == GetMinProto()) {
             // ... and PROTOCOL_VERSION, then we've been remotely activated ...
             activeMasternode.ManageState(connman);
         } else {
@@ -202,7 +202,7 @@ void CMasternode::Check(bool fForce)
                    // masternode doesn't meet payment protocol requirements ...
     bool fRequireUpdate = nProtocolVersion < mnpayments.GetMinMasternodePaymentsProto() ||
                    // or it's our own node and we just updated it to the new protocol but we are still waiting for activation ...
-                   (fOurMasternode && nProtocolVersion < PROTOCOL_VERSION);
+                   (fOurMasternode && nProtocolVersion < GetMinProto());
 
     if(fRequireUpdate) {
         nActiveState = MASTERNODE_UPDATE_REQUIRED;

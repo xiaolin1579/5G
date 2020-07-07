@@ -97,7 +97,7 @@ public:
         consensus.nPosTargetTimespan = consensus.nPowTargetTimespan;
         consensus.nMasternodeMinimumConfirmations = 15;
         consensus.nStakeMinAge = 24 * 60 * 60; // 1 Day
-        consensus.nStakeMaxAge = 60 * 60 * 24 * 30; // 90 Days
+        consensus.nStakeMaxAge = 60 * 60 * 24 * 30; 
         consensus.nModifierInterval = 60 * 20;
         consensus.nCoinbaseMaturity = 20;
         consensus.fPowAllowMinDifficultyBlocks = false;
@@ -269,7 +269,7 @@ public:
         consensus.nPosTargetSpacing = consensus.nPowTargetSpacing;
         consensus.nPosTargetTimespan = consensus.nPowTargetTimespan;
         consensus.nMasternodeMinimumConfirmations = 15;
-        consensus.nStakeMinAge = 10 * 60; // 10 Minutes
+        consensus.nStakeMinAge = 24 * 60 * 60; // 1 day
         consensus.nStakeMaxAge = 60 * 60 * 24 * 90; // 90 Days
         consensus.nModifierInterval = 60 * 20;
         consensus.nCoinbaseMaturity = 20;

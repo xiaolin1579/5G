@@ -96,8 +96,8 @@ public:
         consensus.nPosTargetSpacing = consensus.nPowTargetSpacing;
         consensus.nPosTargetTimespan = consensus.nPowTargetTimespan;
         consensus.nMasternodeMinimumConfirmations = 15;
-        consensus.nStakeMinAge = 60 * 60 * 24 * 15; // 15 Days
-        consensus.nStakeMaxAge = 60 * 60 * 24 * 90; // 90 Days
+        consensus.nStakeMinAge = 24 * 60 * 60; // 1 Day
+        consensus.nStakeMaxAge = 60 * 60 * 24 * 30; // 90 Days
         consensus.nModifierInterval = 60 * 20;
         consensus.nCoinbaseMaturity = 20;
         consensus.fPowAllowMinDifficultyBlocks = false;
@@ -106,7 +106,7 @@ public:
         consensus.nMinerConfirmationWindow = 1440;
         consensus.nMinStakeAmount = 50 * COIN;
         consensus.nMinStakeHistory = 10;
-        consensus.nMnCheckChangeHeight = 62300;
+        consensus.nMnCheckChangeHeight = 63000;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1230767999; // December 31, 2008

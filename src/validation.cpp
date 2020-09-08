@@ -1172,9 +1172,9 @@ CAmount GetMasternodePayment(int mnType, CAmount blockValue)
 {
     switch (mnType)
     {
-        case 0: return 0.10 * blockValue;
-        case 1: return 0.20 * blockValue;
-        case 2: return 0.30 * blockValue;
+        case 0: return 0.04 * blockValue;
+        case 1: return 0.08 * blockValue;
+        case 2: return 0.12 * blockValue;
         default: return 0;
     }
 }

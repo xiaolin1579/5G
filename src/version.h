@@ -9,7 +9,7 @@
  * network protocol versioning
  */
 
-static const int PROTOCOL_VERSION = 70222;
+static const int PROTOCOL_VERSION = 70223;
 
 static const int PRESEGWIT_PROTO_VERSION = 70210;
 

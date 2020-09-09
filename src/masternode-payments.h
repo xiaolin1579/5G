@@ -183,7 +183,7 @@ public:
     std::map<COutPoint, int> mapMasternodeVotecount;
     std::map<COutPoint, int> mapMasternodesDidNotVote;
 
-    CMasternodePayments() : nStorageCoeff(1.25), nMinBlocksToStore(5000) {}
+    CMasternodePayments() : nStorageCoeff(1.25), nMinBlocksToStore(9000) {}
 
     ADD_SERIALIZE_METHODS;
 
